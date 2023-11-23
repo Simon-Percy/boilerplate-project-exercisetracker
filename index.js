@@ -19,53 +19,65 @@ app.get("/", (req, res) => {
 });
 app.use(express.urlencoded({ extended: true }));
 
-app.post("/api/users", (req, res) => {
+app.post("/api/users", async (req, res) => {
   const username = req.body.username;
   const user = new User({
     username,
   });
-  user
-    .save()
-    .then((result) => {
-      res.json(user);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  await user.save();
+  try {
+    const disUser = await User.findOne({ username }).select("username");
+    res.send(disUser);
+  } catch {
+    console.log(err);
+  }
 });
-app.get("/api/users", (req, res) => {
-  User.find().then((result) => {
-    res.send(result);
-  });
+app.get("/api/users", async (req, res) => {
+  const disUser = await User.find().select("username");
+  res.send(disUser);
 });
-app.post("/api/users/:_id/exercises", (req, res) => {
+app.post("/api/users/:_id/exercises", async (req, res) => {
   const id = req.params._id;
   const description = req.body.description;
   const duration = req.body.duration;
   if (!duration || !description) {
     throw Error;
   }
-  let date = req.body.date;
-  if (!date) {
-    date = new Date();
-  } else date = new Date(date);
+  let d = req.body.date;
+  if (!d) {
+    d = new Date();
+  } else {
+    d = new Date(d);
+  }
+  const date = d.toDateString();
+  const exeUser = await User.findById(id);
+  exeUser.duration = duration;
+  exeUser.description = description;
+  exeUser.date = date;
+  exeUser.log.push({
+    duration: +duration,
+    description,
+    date,
+  });
 
-  date = date.toDateString();
-  User.findById(id)
-    .then((result) => {
-      result.duration = duration;
-      result.description = description;
-      result.date = date;
-      result.log.push({
-        duration: duration,
-        description: description,
-        date: date,
-      });
-      res.send(result);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+  try {
+    await exeUser.save();
+    const disUser = await User.findById(id).select(
+      "username duration description date"
+    );
+    res.send(disUser);
+  } catch (err) {
+    res.send(err);
+  }
+});
+app.get("/api/users/:_id/logs", async (req, res) => {
+  const id = req.params._id;
+  try {
+    const disUser = await User.findById(id).select("username log");
+    res.send(disUser);
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {

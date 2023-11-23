@@ -12,7 +12,10 @@ const userSchema = new Schema({
     type: Number,
   },
   date: {
-    type: Date,
+    type: String,
+  },
+  count: {
+    type: Number,
   },
   log: {
     type: [Object],
