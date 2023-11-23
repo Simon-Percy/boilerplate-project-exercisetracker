@@ -9,7 +9,11 @@ require("dotenv").config();
 const dbURI = process.env.DB;
 mongoose
   .connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then((result) => console.log("connected"))
+  .then((result) =>
+    app.listen(process.env.PORT || 3000, () => {
+      console.log("Your app is listening on port " + process.env.PORT);
+    })
+  )
   .catch((err) => console.log(err));
 
 app.use(cors());
@@ -51,6 +55,8 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
   }
   const date = d.toDateString();
   const exeUser = await User.findById(id);
+
+  exeUser.count = exeUser.count + 1;
   exeUser.duration = duration;
   exeUser.description = description;
   exeUser.date = date;
@@ -73,13 +79,9 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
 app.get("/api/users/:_id/logs", async (req, res) => {
   const id = req.params._id;
   try {
-    const disUser = await User.findById(id).select("username log");
+    const disUser = await User.findById(id).select("username count log");
     res.send(disUser);
   } catch (err) {
     console.log(err);
   }
-});
-
-const listener = app.listen(process.env.PORT || 3000, () => {
-  console.log("Your app is listening on port " + listener.address().port);
 });
