@@ -90,12 +90,21 @@ app.get("/api/users/:_id/logs?", async (req, res) => {
     if (from || to) {
       const fromDate = new Date(from) || new Date(0);
       const toDate = new Date(to) || new Date();
-
-      logValues.log = logValues.log.filter((item) => {
-        const logDate = new Date(item.date);
-        return logDate >= fromDate && logDate <= toDate;
-      });
+      logValues.log = logValues.log
+        .filter((item) => {
+          const logDate = new Date(item.date);
+          return logDate >= fromDate && logDate <= toDate;
+        })
+        .map((item) => {
+          const logDate = new Date(item.date);
+          return {
+            description: item.description,
+            duration: item.duration,
+            date: logDate.toDateString(), // Convert date to desired string format
+          };
+        });
     }
+
     if (limit) {
       const limitedLogs = logValues.log.slice(0, +limit);
       logValues.log = limitedLogs;
