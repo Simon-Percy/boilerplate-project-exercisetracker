@@ -33,6 +33,11 @@ app.post("/api/users", (req, res) => {
       console.log(err);
     });
 });
+app.get("/api/users", (req, res) => {
+  User.find().then((result) => {
+    res.send(result);
+  });
+});
 
 const listener = app.listen(process.env.PORT || 3000, () => {
   console.log("Your app is listening on port " + listener.address().port);
