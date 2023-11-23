@@ -79,8 +79,13 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
 app.get("/api/users/:_id/logs?", async (req, res) => {
   const id = req.params._id;
   const { from, to, limit } = req.query;
-
+  let logValues;
   const disUser = await User.findById(id).select("username count log");
-
-  res.send(disUser);
+  logValues = { ...disUser.toObject() };
+  logValues.log = disUser.log.filter((item, index) => {
+    if (limit == 1) {
+      return new Date(item.date) > new Date("2020-08-09");
+    }
+  });
+  res.send(logValues);
 });
