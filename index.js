@@ -8,7 +8,7 @@ require("dotenv").config();
 //database connecting
 const dbURI = process.env.DB;
 mongoose
-  .connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(dbURI)
   .then((result) =>
     app.listen(process.env.PORT || 3000, () => {
       console.log("Your app is listening on port " + process.env.PORT);
@@ -79,13 +79,30 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
 app.get("/api/users/:_id/logs?", async (req, res) => {
   const id = req.params._id;
   const { from, to, limit } = req.query;
-  let logValues;
-  const disUser = await User.findById(id).select("username count log");
-  logValues = { ...disUser.toObject() };
-  logValues.log = disUser.log.filter((item, index) => {
-    if (limit == 1) {
-      return new Date(item.date) > new Date("2020-08-09");
+  try {
+    const disUser = await User.findById(id).select("username count log");
+    if (!disUser) {
+      return res.status(404).json({ error: "User not found" });
     }
-  });
-  res.send(logValues);
+
+    logValues = { ...disUser.toObject() };
+    logValues.log = disUser.log;
+    if (from || to) {
+      const fromDate = new Date(from) || new Date(0);
+      const toDate = new Date(to) || new Date();
+
+      logValues.log = logValues.log.filter((item) => {
+        const logDate = new Date(item.date);
+        return logDate >= fromDate && logDate <= toDate;
+      });
+    }
+    if (limit) {
+      const limitedLogs = logValues.log.slice(0, +limit);
+      logValues.log = limitedLogs;
+    }
+    res.send(logValues);
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+    console.log(error);
+  }
 });
