@@ -1,7 +1,8 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-const { default: mongoose } = require("mongoose");
+const mongoose = require("mongoose");
+const User = require("./user");
 require("dotenv").config();
 
 //database connecting
@@ -20,7 +21,17 @@ app.use(express.urlencoded({ extended: true }));
 
 app.post("/api/users", (req, res) => {
   const username = req.body.username;
-  res.json({ username });
+  const user = new User({
+    username,
+  });
+  user
+    .save()
+    .then((result) => {
+      res.json(user);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 });
 
 const listener = app.listen(process.env.PORT || 3000, () => {
