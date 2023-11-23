@@ -81,4 +81,6 @@ app.get("/api/users/:_id/logs?", async (req, res) => {
   const { from, to, limit } = req.query;
 
   const disUser = await User.findById(id).select("username count log");
+
+  res.send(disUser);
 });
