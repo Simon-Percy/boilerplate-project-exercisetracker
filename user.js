@@ -14,6 +14,9 @@ const userSchema = new Schema({
   date: {
     type: Date,
   },
+  log: {
+    type: [Object],
+  },
 });
 
 const User = mongoose.model("User", userSchema);
