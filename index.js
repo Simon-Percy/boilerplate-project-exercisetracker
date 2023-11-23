@@ -76,12 +76,9 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     res.send(err);
   }
 });
-app.get("/api/users/:_id/logs", async (req, res) => {
+app.get("/api/users/:_id/logs?", async (req, res) => {
   const id = req.params._id;
-  try {
-    const disUser = await User.findById(id).select("username count log");
-    res.send(disUser);
-  } catch (err) {
-    console.log(err);
-  }
+  const { from, to, limit } = req.query;
+
+  const disUser = await User.findById(id).select("username count log");
 });
