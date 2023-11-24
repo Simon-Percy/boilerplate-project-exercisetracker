@@ -85,8 +85,7 @@ app.get("/api/users/:_id/logs?", async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    logValues = { ...disUser.toObject() };
-    logValues.log = disUser.log;
+    logValues = structuredClone(disUser);
     if (from || to) {
       const fromDate = new Date(from) || new Date(0);
       const toDate = new Date(to) || new Date();
