@@ -109,7 +109,7 @@ app.get("/api/users/:_id/logs?", async (req, res) => {
     }
 
     if (limit) {
-      const limitedLogs = logValues.log.slice(0, +limit);
+      const limitedUser = logValues.log.slice(0, limit);
       logValues.log = limitedLogs;
     }
     res.send(logValues);
