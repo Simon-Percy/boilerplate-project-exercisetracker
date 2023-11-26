@@ -42,10 +42,11 @@ app.get("/api/users", async (req, res) => {
 });
 app.post("/api/users/:_id/exercises", async (req, res) => {
   const id = req.params._id;
+
   const description = req.body.description;
   const duration = req.body.duration;
   if (!duration || !description) {
-    throw Error;
+    res.status(404).send("Error something happened");
   }
   let d = req.body.date;
   if (!d) {
@@ -54,41 +55,44 @@ app.post("/api/users/:_id/exercises", async (req, res) => {
     d = new Date(d);
   }
   const date = d.toDateString();
-  const exeUser = await User.findById(id);
-
-  exeUser.count = exeUser.count + 1;
-  exeUser.duration = duration;
-  exeUser.description = description;
-  exeUser.date = date;
-  exeUser.log.push({
-    duration: +duration,
-    description,
-    date,
-  });
-
   try {
+    const exeUser = await User.findById(id);
+    if (!exeUser) {
+      res.status(404).send("No user like tha exists");
+    }
+    exeUser.count = exeUser.count + 1;
+    exeUser.duration = duration;
+    exeUser.description = description;
+    exeUser.date = date;
+    exeUser.log.push({
+      duration: +duration,
+      description,
+      date,
+    });
+
     await exeUser.save();
     const disUser = await User.findById(id).select(
       "username duration description date"
     );
     res.send(disUser);
   } catch (err) {
-    res.send(err);
+    console.log(err);
+    res.send("Ahhh Error");
   }
 });
 app.get("/api/users/:_id/logs?", async (req, res) => {
   const id = req.params._id;
-  const { from, to, limit } = req.query;
+  let { from, to, limit } = req.query;
   try {
     const disUser = await User.findById(id).select("username count log");
     if (!disUser) {
       return res.status(404).json({ error: "User not found" });
     }
-
-    logValues = structuredClone(disUser);
+    const logValues = { ...disUser.toObject() };
     if (from || to) {
-      const fromDate = new Date(from) || new Date(0);
-      const toDate = new Date(to) || new Date();
+      from ? (fromDate = new Date(from)) : (fromDate = new Date(0));
+
+      to ? (toDate = new Date(to)) : (toDate = new Date("9999"));
       logValues.log = logValues.log
         .filter((item) => {
           const logDate = new Date(item.date);
@@ -99,7 +103,7 @@ app.get("/api/users/:_id/logs?", async (req, res) => {
           return {
             description: item.description,
             duration: item.duration,
-            date: logDate.toDateString(), // Convert date to desired string format
+            time: logDate.toDateString(),
           };
         });
     }
