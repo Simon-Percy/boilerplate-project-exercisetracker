@@ -92,7 +92,7 @@ app.get("/api/users/:_id/logs?", async (req, res) => {
     if (from || to) {
       from ? (fromDate = new Date(from)) : (fromDate = new Date(0));
 
-      to ? (toDate = new Date(to)) : (toDate = new Date("9999"));
+      to ? (toDate = new Date(to)) : (toDate = new Date());
       logValues.log = logValues.log
         .filter((item) => {
           const logDate = new Date(item.date);
